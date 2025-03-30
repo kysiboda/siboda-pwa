@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>思博达创客中心课前需求诊断</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: linear-gradient(to right, #eef2f3, #dce3e7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 90%;
+            max-width: 500px;
+            transition: transform 0.3s ease-in-out;
+        }
+        .container:hover {
+            transform: scale(1.02);
+        }
+        h1 {
+            font-size: 24px;
+            color: #333;
+        }
+        p {
+            font-size: 18px;
+            color: #555;
+        }
+        button {
+            background: linear-gradient(to right, #007bff, #0056b3);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        button:hover {
+            background: linear-gradient(to right, #0056b3, #004494);
+            transform: translateY(-2px);
+        }
+        .question-container {
+            display: none;
+            text-align: left;
+            margin-top: 20px;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+        .question-container.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .options {
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .options button {
+            width: 100%;
+            font-size: 16px;
+            background: white;
+            color: #007bff;
+            border: 2px solid #007bff;
+            padding: 10px;
+            border-radius: 8px;
+            transition: all 0.3s;
+            opacity: 0;
+            transform: translateY(10px);
+            animation: fadeIn 0.3s ease-in-out forwards;
+        }
+        .options button:hover {
+            background: #007bff;
+            color: white;
+        }
+        .progress {
+            margin-top: 15px;
+            font-size: 16px;
+            color: #666;
+        }
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>思博达创客中心课前需求诊断</h1>
+        <p id="intro">欢迎使用本系统，请点击下方按钮开始诊断。</p>
+        <button id="start-btn">开始诊断</button>
+        
+        <div class="question-container" id="question-container">
+            <p class="progress" id="progress-text"></p>
+            <p id="question-text"></p>
+            <div class="options" id="options"></div>
+            <button id="back-btn" style="display:none; margin-top: 10px;">返回上一步</button>
+        </div>
+
+        <div class="question-container" id="result-container" style="display: none;">
+            <h2>诊断报告</h2>
+            <p id="result-text"></p>
+        </div>
+    </div>
+
+    <script>
+        // 获取 HTML 元素
+        const startBtn = document.getElementById("start-btn");
+        const introText = document.getElementById("intro");
+        const questionContainer = document.getElementById("question-container");
+        const resultContainer = document.getElementById("result-container");
+        const progressText = document.getElementById("progress-text");
+        const questionText = document.getElementById("question-text");
+        const optionsDiv = document.getElementById("options");
+        const resultText = document.getElementById("result-text");
+        const backBtn = document.getElementById("back-btn");
+
+        // 问题和选项配置
+        const questions = [
+            { 
+                text: "您的学习目标是什么？", 
+                options: ["升学规划", "竞赛准备", "兴趣培养", "能力提升", "未来职业探索"] 
+            },
+            { 
+                text: "您的家庭场景需求是什么？", 
+                options: ["科技启蒙", "亲子互动", "假期集中学习", "日常融合", "周末利用"] 
+            },
+            { 
+                text: "孩子成长中遇到的痛点是什么？", 
+                options: ["注意力不集中", "逻辑思维薄弱", "学科衔接难", "缺乏动力", "动手能力不足"] 
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let answers = [];
+
+        // 根据答案综合计算推荐话术，并增加认知能力提升、教育科学和成长科学的理论支撑描述
+        function getResult(lt, fs, pp) {
+            let message = "";
+            // 针对学习目标为升学规划或竞赛准备（模板1为主）
+            if (lt === "升学规划" || lt === "竞赛准备") {
+                message = "您的目标聚焦在升学或竞赛，我们推荐高阶编程与实战类课程，帮助孩子在学术竞争中脱颖而出。";
+                message += " 基于教育科学与成长科学的前沿理论，我们的课程设计特别注重认知能力的系统提升，帮助孩子构建扎实的学科基础与科学的学习方法。";
+                // 家庭场景补充
+                if (!(fs === "假期集中学习" || fs === "周末利用")) {
+                    message += " 同时考虑到您的家庭场景为“" + fs + "”，我们在课程中融入了家长参与及趣味科普的元素，以促进亲子互动和整体认知提升。";
+                }
+                // 成长痛点补充
+                if (pp === "逻辑思维薄弱") {
+                    message += " 课程中将强化逻辑思维训练，突破孩子在算法和问题解决中的思维障碍。";
+                }
+                if (pp === "学科衔接难") {
+                    message += " 针对学科衔接问题，我们特别设计了衔接过渡课程，帮助孩子顺利衔接各学科知识。";
+                }
+                if (pp === "注意力不集中") {
+                    message += " 同时，我们将通过专注力训练模块，全面提升孩子的注意力和自我管理能力。";
+                }
+            }
+            // 针对兴趣培养（模板2）
+            else if (lt === "兴趣培养") {
+                message = "您的选择显示孩子对科技探索充满兴趣，我们推荐亲子互动性强、以启蒙为主的机械搭建课程，提升动手能力，让孩子在玩乐中学会创造。";
+                message += " 我们的课程基于教育科学理论，旨在培养孩子的初步认知能力和科学探索精神。";
+                if (!(fs === "科技启蒙" || fs === "亲子互动")) {
+                    message += " 考虑到您的家庭场景为“" + fs + "”，我们也会适当调整课程节奏与内容，以更好地适配您的需求。";
+                }
+                if (pp === "注意力不集中") {
+                    message += " 同时，通过互动环节激发孩子的注意力，进一步提升专注力。";
+                }
+            }
+            // 针对能力提升
+            else if (lt === "能力提升") {
+                // 根据家庭场景区分基础与进阶
+                if (fs === "科技启蒙" || fs === "亲子互动") {
+                    message = "您的选择表明孩子需要基础能力培养，我们推荐亲子互动和启蒙课程，如乐高创意搭建，让孩子在玩中学。";
+                    message += " 课程设计中融入了教育科学和成长科学的理论，旨在培养孩子的认知框架和科学探究能力。";
+                } else {
+                    message = "孩子已具备一定基础，我们推荐编程与智能硬件类课程，结合实际应用提升创新思维，让孩子走向更高阶的科技探索之路。";
+                    message += " 我们的课程不仅侧重技能传授，更注重认知能力和工程思维的提升，基于最新的学术研究成果。";
+                }
+                if (pp === "注意力不集中") {
+                    message += " 同时，我们将注重课堂互动设计，以增强孩子的专注力。";
+                }
+                if (pp === "动手能力不足") {
+                    message += " 课程中会特别强调实践操作，全面提升孩子的动手能力。";
+                }
+            }
+            // 针对未来职业探索（模板4）
+            else if (lt === "未来职业探索") {
+                message = "您的选择偏向职业探索，我们推荐未来行业相关的高科技课程，如3D动画创意设计与数据分析实战，让孩子在实践中发现兴趣，提前为未来职业做准备。";
+                message += " 课程融合了教育科学与前沿行业趋势，旨在提升孩子的认知水平和职业素养。";
+            }
+            // 综合实践/逻辑强化（模板5）
+            else {
+                message = "您的需求偏向于思维训练与逻辑强化，我们推荐系统性的编程与数据实践课程，帮助孩子提升学科逻辑和解决问题能力。";
+                message += " 基于教育科学和成长科学的理论支撑，课程设计注重培养孩子的认知能力和科学思维。";
+                if (pp === "学科衔接难") {
+                    message += " 该课程与学科知识紧密结合，帮助孩子更好地理解数理逻辑。";
+                }
+                if (pp === "动手能力不足") {
+                    message += " 同时，我们会增加动手实践环节，全面提升孩子的操作和实践能力。";
+                }
+            }
+            return message;
+        }
+
+        // 加载问题逻辑
+        function loadQuestion(index) {
+            if (index >= questions.length) {
+                showResult();
+                return;
+            }
+            questionContainer.classList.remove("active");
+            setTimeout(() => {
+                progressText.textContent = `问题 ${index + 1} / ${questions.length}`;
+                questionText.textContent = questions[index].text;
+                optionsDiv.innerHTML = "";
+                backBtn.style.display = index > 0 ? "block" : "none";
+                questions[index].options.forEach(option => {
+                    const btn = document.createElement("button");
+                    btn.textContent = option;
+                    btn.onclick = () => {
+                        answers[index] = option;
+                        currentQuestionIndex++;
+                        loadQuestion(currentQuestionIndex);
+                    };
+                    optionsDiv.appendChild(btn);
+                });
+                questionContainer.classList.add("active");
+            }, 300);
+        }
+
+        // 显示结果逻辑，整合三个答案输出推荐话术
+        function showResult() {
+            questionContainer.style.display = "none";
+            resultContainer.style.display = "block";
+            setTimeout(() => {
+                resultContainer.classList.add("active");
+            }, 100);
+            const lt = answers[0];
+            const fs = answers[1];
+            const pp = answers[2];
+            const finalMessage = getResult(lt, fs, pp);
+            resultText.innerHTML = `<strong>学习目标：</strong>${lt}<br>
+                                     <strong>家庭场景：</strong>${fs}<br>
+                                     <strong>成长痛点：</strong>${pp}<br><br>
+                                     ${finalMessage}`;
+        }
+
+        // 事件监听
+        startBtn.addEventListener("click", () => {
+            startBtn.style.display = "none";
+            introText.style.display = "none";
+            questionContainer.style.display = "block";
+            setTimeout(() => questionContainer.classList.add("active"), 100);
+            loadQuestion(currentQuestionIndex);
+        });
+
+        backBtn.addEventListener("click", () => {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                loadQuestion(currentQuestionIndex);
+            }
+        });
+    </script>
+   <p>您可以将此页面 "添加到主屏幕"，快速访问！</p>
+</body>
+</html>
